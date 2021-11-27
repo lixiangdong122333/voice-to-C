@@ -2,7 +2,10 @@ package cn.lixiangdong;
 
 import javax.sound.sampled.*;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -10,6 +13,16 @@ import java.net.Socket;
  *
  */
 public class Server {
+    /**
+     * 广播端口
+     */
+    public static final int BROADCAST_PORT = 8099;
+
+    /**
+     * 服务器(本机)监听的端口号
+     */
+    public static final int SERVER_PORT = 8088;
+
     public static void main(String[] args) {
         //监听端口
         new Thread(new Monitor()).start();
@@ -21,21 +34,17 @@ public class Server {
  * 本类用于监听连接并创建对话线程
  */
 class Monitor implements Runnable {
-    /**
-     * 服务器(本机)监听的端口号
-     */
-    public static final int SERVER_PORT = 8088;
 
     @Override
     public void run() {
         ServerSocket serverSocket = null;
 
         try {
-            System.out.println("监听"+SERVER_PORT+"......");
-            serverSocket = new ServerSocket(SERVER_PORT);
+            System.out.println("监听" + Server.SERVER_PORT + "......");
+            serverSocket = new ServerSocket(Server.SERVER_PORT);
             System.out.println("监听成功，等待接入");
         } catch (IOException e) {
-            System.out.println("监听" + SERVER_PORT + "失败");
+            System.out.println("监听" + Server.SERVER_PORT + "失败");
             e.printStackTrace();
         }
         Socket accept;
@@ -59,16 +68,18 @@ class Monitor implements Runnable {
  */
 class Dialogue implements Runnable {
     Socket socket;
-    byte[] data=new byte[1024];
+    byte[] data = new byte[1024];
+
     public Dialogue(Socket socket) {
         this.socket = socket;
     }
 
     @Override
     public void run() {
-        System.out.println(socket.getInetAddress()+"：已连接");
+        System.out.println(socket.getInetAddress() + "：已连接");
         BufferedInputStream bufferedInputStream = null;
-        SourceDataLine sourceDataLine = null;
+        BufferedOutputStream bufferedOutputStream = null;
+//        SourceDataLine sourceDataLine = null;
         try {
 
             //获取输入流
@@ -76,22 +87,30 @@ class Dialogue implements Runnable {
                     new BufferedInputStream(
                             socket.getInputStream());
 
+            //输出流
 
-            //音频处理
-            AudioFormat audioFormat = new AudioFormat(22050, 16, 1, true, false);
-            sourceDataLine = AudioSystem.getSourceDataLine(audioFormat);
-            sourceDataLine.open(audioFormat);
-            sourceDataLine.start();
+            bufferedOutputStream =
+                    new BufferedOutputStream(
+                            socket.getOutputStream());
 
-            while (bufferedInputStream.read(data,0,data.length)!=-1){
-                sourceDataLine.write(data,0,data.length);
+
+//            //音频处理测试
+//            AudioFormat audioFormat = new AudioFormat(22050, 16, 1, true, false);
+//            sourceDataLine = AudioSystem.getSourceDataLine(audioFormat);
+//            sourceDataLine.open(audioFormat);
+//            sourceDataLine.start();
+
+            while (bufferedInputStream.read(data, 0, data.length) != -1) {
+//                sourceDataLine.write(data,0,data.length);//音频处理测试
+                bufferedOutputStream.write(data, 0, data.length);
+
             }
-        } catch (IOException | LineUnavailableException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            System.out.println(socket.getInetAddress()+"：已断开");
+        } finally {
+            System.out.println(socket.getInetAddress() + "：已断开");
             try {
-                sourceDataLine.close();
+//                sourceDataLine.close();
                 bufferedInputStream.close();
                 socket.close();
             } catch (IOException e) {
