@@ -21,7 +21,7 @@ public class Test {
     /**
      * 要链接的服务器的IP地址
      */
-    public static final String IP = "127.0.0.1";
+    public static final String IP = "192.168.50.140";
     /**
      * 服务器端口号
      */
