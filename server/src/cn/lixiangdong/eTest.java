@@ -6,13 +6,13 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Test {
+public class eTest {
     public static AudioFormat audioFormat = new AudioFormat(22050, 16, 1, true, false);
     public static Socket socket;
 
     static {
         try {
-            socket = new Socket(Test.IP, Test.SERVER_PORT);
+            socket = new Socket(eTest.IP, eTest.SERVER_PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -44,14 +44,14 @@ class sendOut implements Runnable {
         try {
 
             byte[] data = new byte[1024];
-            TargetDataLine targetDataLine = AudioSystem.getTargetDataLine(Test.audioFormat);
-            targetDataLine.open(Test.audioFormat);
+            TargetDataLine targetDataLine = AudioSystem.getTargetDataLine(eTest.audioFormat);
+            targetDataLine.open(eTest.audioFormat);
             targetDataLine.start();
 
 
             BufferedOutputStream bufferedOutputStream =
                     new BufferedOutputStream(
-                            Test.socket.getOutputStream());
+                            eTest.socket.getOutputStream());
 
             while (targetDataLine.read(data, 0, data.length) != -1) {
                 bufferedOutputStream.write(data, 0, data.length);
@@ -70,13 +70,13 @@ class receive implements Runnable {
     public void run() {
         try {
 
-            sourceDataLine = AudioSystem.getSourceDataLine(Test.audioFormat);
-            sourceDataLine.open(Test.audioFormat);
+            sourceDataLine = AudioSystem.getSourceDataLine(eTest.audioFormat);
+            sourceDataLine.open(eTest.audioFormat);
             sourceDataLine.start();
 
             BufferedInputStream bufferedInputStream=
                     new BufferedInputStream(
-                            Test.socket.getInputStream()
+                            eTest.socket.getInputStream()
                     );
 
             while (bufferedInputStream.read(data, 0, data.length) != -1){

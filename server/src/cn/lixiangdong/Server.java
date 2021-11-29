@@ -5,6 +5,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,6 +24,7 @@ public class Server {
      */
     public static final int SERVER_PORT = 8088;
 
+
     public static void main(String[] args) {
         //监听端口
         new Thread(new Monitor()).start();
@@ -37,10 +40,12 @@ class Monitor implements Runnable {
     @Override
     public void run() {
         ServerSocket serverSocket = null;
+//        DatagramSocket serverSocket = null;
 
         try {
             System.out.println("监听" + Server.SERVER_PORT + "......");
             serverSocket = new ServerSocket(Server.SERVER_PORT);
+//            serverSocket=new DatagramSocket(Server.SERVER_PORT);
             System.out.println("监听成功，等待接入");
         } catch (IOException e) {
             System.out.println("监听" + Server.SERVER_PORT + "失败");
@@ -52,6 +57,7 @@ class Monitor implements Runnable {
             try {
                 //阻塞等待连接
                 accept = serverSocket.accept();
+
                 //新建聊天线程，将socket传给聊天线程并启动
 //                new Thread(new Dialogue(accept)).start();
                 ExecutorService executorService = Executors.newFixedThreadPool(6);
@@ -90,7 +96,9 @@ class Dialogue implements Runnable {
 
             //输出流
 
-            bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
+            bufferedOutputStream =
+                    new BufferedOutputStream(
+                            socket.getOutputStream());
             outputOfUser.add(bufferedOutputStream);
 
 
@@ -121,4 +129,22 @@ class Dialogue implements Runnable {
             }
         }
     }
+}
+
+/**
+ * 控制线程，采用TCP协议
+ */
+class Control implements  Runnable{
+    Socket socket;
+
+    public Control(Socket socket) {
+        this.socket = socket;
+    }
+
+    @Override
+    public void run() {
+        InetAddress inetAddress = socket.getInetAddress();
+        System.out.println(inetAddress);
+    }
+
 }
